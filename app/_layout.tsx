@@ -18,14 +18,28 @@ export default function Layout() {
   }, []);
 
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{
-          headerTitle: session ? 'Tasks' : 'Login',
-        }}
+    <Stack screenOptions={{ headerShown: true }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="meals/index" 
+        options={{ 
+          headerTitle: "Our Menu",
+          headerStyle: {
+            backgroundColor: "#f5f5f5",
+          },
+          headerShadowVisible: false,
+        }} 
+      />
+      <Stack.Screen 
+        name="meals/[id]" 
+        options={{ 
+          headerTitle: "Meal Details",
+          headerStyle: {
+            backgroundColor: "#f5f5f5",
+          },
+          headerShadowVisible: false,
+        }} 
       />
     </Stack>
   );
 }
-

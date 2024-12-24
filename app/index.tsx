@@ -1,34 +1,69 @@
-// app/index.tsx
-import { View, StyleSheet } from 'react-native';
-import { useEffect, useState } from 'react';
-import { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import Auth from '@/components/Auth';
-import TaskList from '@/components/TaskList';
+// app/_layout.tsx
+import { Stack, Redirect } from "expo-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Session } from "@supabase/supabase-js";
 
-export default function Index() {
+export default function Layout() {
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setSession(session);
-    });
+      setLoading(false);
+    };
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    getSession();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setLoading(false);
+      }
+    );
+
+    // return () => {
+    //   subscription?.unsubscribe();
+    // };
   }, []);
 
+  if (loading) {
+    // Optionally, show a loading indicator while checking authentication
+    return null;
+  }
+
+  if (!session) {
+    // Redirect to /auth if the user is not logged in
+    return <Redirect href="/auth" />;
+  }
+
   return (
-    <View style={styles.container}>
-      {session && session.user ? <TaskList /> : <Auth />}
-    </View>
+    <Stack screenOptions={{ headerShown: true }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="meals/index"
+        options={{
+          headerTitle: "Our Menu",
+          headerStyle: {
+            backgroundColor: "#f5f5f5",
+          },
+          headerShadowVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="meals/[id]"
+        options={{
+          headerTitle: "Meal Details",
+          headerStyle: {
+            backgroundColor: "#f5f5f5",
+          },
+          headerShadowVisible: false,
+        }}
+      />
+    </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-});
